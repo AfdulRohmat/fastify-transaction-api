@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int                @id @default(autoincrement())
+  username         String
+  email            String             @unique
+  password         String
+  accounts         Account[]
+  RecurringPayment RecurringPayment[]
+}
+
+model Account {
+  id       Int     @id @default(autoincrement())
+  type     String
+  balance  Decimal @db.Decimal(15, 2)
+  currency String
+  userId   Int
+  user     User    @relation(fields: [userId], references: [id])
+
+  fromTransactions Transaction[]      @relation("FromAccount")
+  toTransactions   Transaction[]      @relation("ToAccount")
+  RecurringPayment RecurringPayment[]
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  amount    Decimal  @db.Decimal(15, 2)
+  currency  String
+  timestamp DateTime @default(now())
+  type      String // 'deposit', 'withdrawal', 'transfer'
+  status    String // 'pending', 'completed', 'failed'
+
+  fromAccountId Int? // Nullable because deposits might not have a source account his represents transactions where the account is the sender (e.g., transfers, withdrawals).
+  toAccountId   Int? //represents transactions where the account is the recipient (e.g., deposits, transfers)
+
+  fromAccount Account? @relation("FromAccount", fields: [fromAccountId], references: [id])
+  toAccount   Account? @relation("ToAccount", fields: [toAccountId], references: [id])
+}
+
+model RecurringPayment {
+  id        Int       @id @default(autoincrement()) // Unique identifier for the recurring payment record
+  amount    Decimal   @db.Decimal(15, 2) // The amount to be charged each period
+  currency  String // Currency of the payment (e.g., 'IDR' for Indonesian Rupiah)
+  interval  String // Interval for recurrence (e.g., 'daily', 'weekly', 'monthly')
+  startDate DateTime
+  endDate   DateTime? // Optional end date
+  
+  userId    Int // Foreign key to the User model
+  user      User      @relation(fields: [userId], references: [id]) // Relationship with the User
+
+  accountId Int // Foreign key to the Account model where the payment will be deducted
+  account   Account   @relation(fields: [accountId], references: [id]) // Relationship with the Account
+
+  status    String // Status of the recurring payment ('active', 'inactive', etc.)
+}
