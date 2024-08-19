@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { loginUserSchema, registerUserSchema } from "./user.schema";
+import { getUserSchema, loginUserSchema, registerUserSchema } from "./user.schema";
 import { UserController } from "./user.controller";
 
 async function userRoutes(server: FastifyInstance) {
@@ -7,25 +7,22 @@ async function userRoutes(server: FastifyInstance) {
 
     server.post(
         '/register', {
-        schema: {
-            body: registerUserSchema,
-        },
+        schema: registerUserSchema
     },
         userController.registerUserHandler.bind(userController)
     );
 
     server.post(
         '/login', {
-        schema: {
-            body: loginUserSchema,
-        },
+        schema: loginUserSchema,
     },
         userController.loginUserHandler.bind(userController)
     );
 
     server.get(
         '/', {
-        preHandler: [server.authenticate]
+        preHandler: [server.authenticate],
+        schema: getUserSchema
     },
         userController.getUserHandler.bind(userController)
     );

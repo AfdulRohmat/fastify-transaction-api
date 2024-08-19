@@ -5,8 +5,12 @@ import accountRoutes from "./modules/account/account.route";
 import { paymentRoutes } from "./modules/payment/payment.route";
 import FastifyCron from 'fastify-cron';
 import { PaymentService } from "./modules/payment/payment.service";
+import fastifySwagger from '@fastify/swagger';
+import fastifySwaggerUi from '@fastify/swagger-ui';
 
-export const server = Fastify()
+export const server = Fastify({
+    logger: true
+})
 
 declare module "fastify" {
     interface FastifyRequest {
@@ -26,6 +30,49 @@ declare module "fastify" {
 //         };
 //     }
 // }
+
+// Register Swagger plugin
+server.register(fastifySwagger, {
+    swagger: {
+        info: {
+            title: 'Fastify TRANSACTION API',
+            description: 'API documentation',
+            version: '1.0.0',
+        },
+        host: 'localhost:3000',
+        schemes: ['http'],
+        consumes: ['application/json'],
+        produces: ['application/json'],
+        securityDefinitions: {
+            BearerAuth: {
+                type: 'apiKey',
+                name: 'Authorization',
+                in: 'header',
+                description: 'Enter the token, including The "Bearer " prefix',
+            },
+        },
+        security: [{ BearerAuth: [] }],
+    },
+});
+
+// Register @fastify/swagger-ui plugin.
+server.register(fastifySwaggerUi, {
+    routePrefix: '/docs', // URL where the Swagger UI will be available
+    uiConfig: {
+        docExpansion: 'full',
+        deepLinking: false,
+    },
+    uiHooks: {
+        onRequest: (request, reply, next) => next(),
+        preHandler: (request, reply, next) => next(),
+    },
+    staticCSP: true,
+    transformStaticCSP: (header) => header,
+    transformSpecification: (swaggerObject, request, reply) => {
+        return swaggerObject;
+    },
+    transformSpecificationClone: true,
+});
 
 // Register the fastify-cron plugin
 server.register(FastifyCron, {

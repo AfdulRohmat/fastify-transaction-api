@@ -9,29 +9,21 @@ export async function paymentRoutes(fastify: FastifyInstance) {
 
     fastify.post('/deposit', {
         preHandler: [server.authenticate],
-        schema: {
-            body: depositSchema
-        }
+        schema: depositSchema,
     }, paymentController.depositHandler.bind(paymentController));
 
     fastify.post('/withdraw', {
         preHandler: [server.authenticate],
-        schema: {
-            body: withdrawalSchema
-        }
+        schema: withdrawalSchema
     }, paymentController.withdrawHandler.bind(paymentController));
 
     fastify.post('/transfer', {
         preHandler: [server.authenticate],
-        schema: {
-            body: transferSchema
-        }
+        schema: transferSchema,
     }, paymentController.transferHandler.bind(paymentController));
 
     fastify.post('/recurring-payment', {
         preHandler: [server.authenticate],
-        schema: {
-            body: recurringPaymentSchema
-        }
+        schema: recurringPaymentSchema
     }, paymentController.recurringPaymentsHandler.bind(paymentController));
 }

@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { AccountController } from "./account.controller";
 import { createAccountSchema, getAccountsSchema, getAccountHistorySchema } from "./account.schema";
 import { server } from "../../app";
+import { getUserSchema } from "../user/user.schema";
 
 async function accountRoutes(fastify: FastifyInstance) {
   const accountController = new AccountController();
@@ -9,9 +10,7 @@ async function accountRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/create-account', {
     preHandler: [server.authenticate],
-    schema: {
-      body: createAccountSchema,
-    },
+    schema: createAccountSchema,
   },
     accountController.createAccountHandler.bind(accountController)
   );
@@ -19,6 +18,7 @@ async function accountRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/', {
     preHandler: [server.authenticate],
+    schema: getAccountsSchema
   },
     accountController.getAccountsHandler.bind(accountController)
   );
@@ -26,9 +26,7 @@ async function accountRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/history', {
     preHandler: [server.authenticate],
-    schema: {
-      querystring: getAccountHistorySchema,
-    },
+    schema: getAccountHistorySchema
   },
     accountController.getAccountHistoryHandler.bind(accountController)
   );
