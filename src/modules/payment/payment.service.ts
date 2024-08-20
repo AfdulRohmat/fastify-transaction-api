@@ -136,13 +136,32 @@ export class PaymentService {
         });
 
         for (const payment of duePayments) {
-            try {
-                // Create a transaction for each due recurring payment
-                await this.createTransactionForPayment(payment);
-            } catch (error) {
-                console.error(`Failed to process payment ${payment.id}:`, error);
-                // Handle error (e.g., log it, notify the user, etc.)
+            if (this.isPaymentDueToday(payment, today)) {
+                try {
+                    // Create a transaction for each due recurring payment
+                    await this.createTransactionForPayment(payment);
+                } catch (error) {
+                    console.error(`Failed to process payment ${payment.id}:`, error);
+                    // Handle error (e.g., log it, notify the user, etc.)
+                }
             }
+        }
+    }
+
+    private isPaymentDueToday(payment: any, today: Date): boolean {
+        const startDate = new Date(payment.startDate);
+
+        switch (payment.interval) {
+            case 'daily':
+                return true; // Daily payments are due every day
+            case 'weekly':
+                return startDate.getDay() === today.getDay();
+            case 'monthly':
+                return startDate.getDate() === today.getDate();
+            case 'yearly':
+                return startDate.getMonth() === today.getMonth() && startDate.getDate() === today.getDate();
+            default:
+                return false;
         }
     }
 
