@@ -7,11 +7,12 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
+      POSTGRES_DB: transaction-db
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
     ports:
-      - "5432:5432"
+      - "54320:5432"
     networks:
       - postgres
     restart: unless-stopped
